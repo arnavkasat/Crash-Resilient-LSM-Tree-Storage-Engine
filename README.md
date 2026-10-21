@@ -15,6 +15,12 @@ No external crates in the library: the CRC-32C, Bloom filter, LRU, block
 format, varint encoding and PRNG are all implemented here. `criterion` is a
 dev-dependency for the benchmarks.
 
+![1,000 crash cycles, 954,462 acknowledged writes verified, 0 lost](docs/img/crash.svg)
+
+Every number on this page is parsed out of a log committed in
+[`docs/results/`](docs/results); the charts are regenerated from those logs by
+[`scripts/plot_results.py`](scripts/plot_results.py).
+
 ---
 
 ## Quick start
@@ -177,50 +183,60 @@ the classic way to "lose" a file that was itself `fsync`ed.
 Two harnesses, because they answer different questions:
 
 ```console
-cargo bench                                        # criterion: per-op latency
-cargo run --release --bin lsmbench -- --keys 20000000 --random
+cargo bench                                                    # criterion: per-op latency
+cargo run --release --bin lsmbench -- --keys 20000000 --random # sustained throughput
+python3 scripts/plot_results.py                                # redraw the charts below
 ```
 
-Measured on a 4-vCPU Linux cloud container (virtio disk, ext4) — **absolute
-numbers are hardware-bound; the ratios are the interesting part**. 100-byte
-values, 17-byte keys.
+Measured on a 4-vCPU Linux cloud container (virtio disk, ext4), 17-byte keys and
+100-byte values. **Absolute numbers are hardware-bound — the ratios are the
+interesting part.**
 
-### Throughput
+![Throughput chart](docs/img/throughput.svg)
 
-| Workload | Throughput |
-| --- | --- |
-| Sequential writes, OS-buffered log, 3M keys | **398K writes/sec** |
-| Random-order writes, 20M keys, compaction running throughout | **116K writes/sec** |
-| Writes with `fsync` per write, one key at a time | **5.1K writes/sec** |
-| Writes with `fsync` per write, batches of 100 (group commit) | **196K writes/sec** |
-| Random point reads, 20M keys (~1.4 GB live, 2.1% cache hit rate) | **69K reads/sec** |
-| Random point reads over a hot 10% of 20M keys | **172K reads/sec** |
-| Random point reads, 3M keys | **103K reads/sec** |
+| Workload | Throughput | Log |
+| --- | --- | --- |
+| Sequential writes, OS-buffered log, 3M keys | **337.9K writes/sec** | [bench-3m](docs/results/bench-3m.txt) |
+| Random-order writes, 20M keys, compacting throughout | **133.7K writes/sec** | [bench-20m](docs/results/bench-20m-random.txt) |
+| Writes with `fsync` per write, one at a time | **5.8K writes/sec** | [bench-durability](docs/results/bench-durability.txt) |
+| Writes with `fsync` per write, batches of 100 | **248.3K writes/sec** | [bench-durability](docs/results/bench-durability.txt) |
+| Random point reads, 3M keys | **99.2K reads/sec** | [bench-3m](docs/results/bench-3m.txt) |
+| Random point reads, 20M keys (~1.5 GB on disk, 2.0% cache hit rate) | **65.7K reads/sec** | [bench-20m](docs/results/bench-20m-random.txt) |
+| Random point reads over a hot 10% of 20M keys | **162.8K reads/sec** | [bench-20m](docs/results/bench-20m-random.txt) |
+| Point reads that all miss, 3M keys (the Bloom filter's home turf) | **2.1M reads/sec** | [bench-3m](docs/results/bench-3m.txt) |
 
 The gap between rows 3 and 4 is the entire cost of durability: an `fsync` per
-write is a disk round trip, and batching amortises it ~38×. That is why
+write is a disk round trip, and batching amortises it **43×**. That is why
 `WriteBatch` exists.
 
-The 20M-key run compacted **16.5 GB** while serving those writes, across 867
-compactions (303 of them trivial moves).
+The 20M-key run compacted **16.4 GB** while serving those writes, across 826
+compactions (286 of them trivial moves), finishing with 7 files in L1, 78 in L2
+and 279 in L3.
 
 ### What the Bloom filters and the block cache buy
 
 The same data and the same reads, with `bloom_bits_per_key = 0` and a 64 KB
-cache. Negative means *faster with them on* (3M keys):
+cache. Negative means *faster with them on*.
 
-| Read workload | Change in mean read latency |
-| --- | --- |
-| All misses | **−93.9%** |
-| 50% misses | **−45.0%** |
-| Hot set (90% of reads on 10% of keys), 20% misses | **−54.5%** |
-| All hits, uniform over the whole key space | +3.0% |
+![Read latency with and without the Bloom filter and block cache](docs/img/bloom-cache.svg)
 
-That last row is the honest one: on an all-hit uniform workload the filter can
-never skip anything, so its hash is pure overhead, and a cache far smaller than
-the dataset rarely hits. The filters pay for themselves on misses — which is
-most of what a real key-value workload does — and the cache pays for itself on
-skew. Reproduce any of it with `cargo run --release --bin lsmbench`.
+Three independent runs ([run 1](docs/results/bench-3m.txt),
+[runs 2-3](docs/results/bench-3m-repeats.txt)), because one sample of a
+percentage is not a result:
+
+| Read workload | Run 1 | Run 2 | Run 3 |
+| --- | --- | --- | --- |
+| All misses | **−94.0%** | −93.1% | −93.3% |
+| Hot set (90% of reads on 10% of keys) | **−45.2%** | −48.3% | −48.7% |
+| 50% misses | **−40.1%** | −38.8% | −32.3% |
+| All hits, uniform | **+26.6%** | +20.5% | +15.0% |
+
+That last row is the honest one, and it is consistently positive: on an all-hit
+uniform workload the filter can never skip a file, and a 64 MB cache in front of
+a 320 MB dataset hits only 44% of the time, so the bookkeeping is a net cost of
+roughly 15–27%. The filters pay for themselves on misses — which is most of what
+a real key-value workload does — and the cache pays for itself on skew. Both are
+switchable through `Options`, which is how the comparison above was produced.
 
 ---
 
@@ -252,15 +268,24 @@ cargo test --release --test crash -- --ignored --nocapture   # the full 1,000-cy
 
 ### Crash-test results
 
-1,000 `SIGKILL`s at randomised moments, 627,715 acknowledged writes checked
-afterwards, **none lost**:
+1,000 `SIGKILL`s at randomised moments, 954,462 acknowledged writes checked
+afterwards, **none lost** — full log in
+[`docs/results/crash-1000.txt`](docs/results/crash-1000.txt):
 
-```
+```console
 $ LSMKV_CRASH_ITERS=1000 cargo test --release --test crash -- --ignored --nocapture
-...
-1000 crash cycles in 174.2s, 627715 acknowledged writes verified, 0 lost
-test result: ok. 1 passed; 0 failed
+running 1 test
+cycle 0/1000: 540 acknowledged writes verified so far
+cycle 500/1000: 467994 acknowledged writes verified so far
+cycle 950/1000: 902383 acknowledged writes verified so far
+1000 crash cycles in 172.1s, 954462 acknowledged writes verified, 0 lost
+test thousand_crash_cycles ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 3 filtered out
 ```
+
+The short sweep that runs as part of `cargo test` does the same thing 20 times,
+and CI runs 40.
 
 ---
 
@@ -285,6 +310,14 @@ src/
   testkit.rs      deterministic keys/values/PRNG shared by tests and benches
   bin/lsmctl.rs   CLI, and the crash-test driver
   bin/lsmbench.rs throughput harness
+tests/
+  engine.rs       end-to-end behaviour
+  recovery.rs     what the engine does with post-crash on-disk state
+  crash.rs        SIGKILL a child writer, reopen, verify every acknowledged write
+benches/engine.rs criterion micro-benchmarks
+docs/results/     raw captured output every number in this README comes from
+docs/img/         charts generated from those logs
+scripts/          the chart generator
 ```
 
 ---

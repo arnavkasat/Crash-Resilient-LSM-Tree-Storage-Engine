@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="274" viewBox="0 0 900 274" role="img">
+  <style>
+    .bg    { fill: #f6f8fa; stroke: #d0d7de; }
+    .title { fill: #1f2328; font: 600 17px -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif; }
+    .sub   { fill: #656d76; font: 400 12.5px -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif; }
+    .label { fill: #1f2328; font: 400 13px -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif; }
+    .value { fill: #1f2328; font: 600 13px ui-monospace, SFMono-Regular, Menlo, monospace; }
+    .axis  { fill: #656d76; font: 400 11px ui-monospace, SFMono-Regular, Menlo, monospace; }
+    .grid  { stroke: #d8dee4; stroke-width: 1; }
+    .zero  { stroke: #8c959f; stroke-width: 1.5; }
+    .big   { fill: #1f2328; font: 700 38px -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif; }
+    @media (prefers-color-scheme: dark) {
+      .bg    { fill: #0d1117; stroke: #30363d; }
+      .title, .label, .value, .big { fill: #e6edf3; }
+      .sub, .axis { fill: #8b949e; }
+      .grid  { stroke: #21262d; }
+      .zero  { stroke: #6e7681; }
+    }
+  </style>
+<rect class="bg" x="0.5" y="0.5" width="899" height="273" rx="8"/><text class="title" x="22" y="32">What the Bloom filters and block cache buy</text><text class="sub" x="22" y="54">Same 3M-key dataset and the same reads, with bloom_bits_per_key = 0 and a 64 KB cache</text><line class="grid" x1="297.8" y1="62" x2="297.8" y2="218"/><text class="axis" x="297.8" y="238" text-anchor="middle">-100%</text><line class="grid" x1="395.2" y1="62" x2="395.2" y2="218"/><text class="axis" x="395.2" y="238" text-anchor="middle">-75%</text><line class="grid" x1="492.5" y1="62" x2="492.5" y2="218"/><text class="axis" x="492.5" y="238" text-anchor="middle">-50%</text><line class="grid" x1="589.9" y1="62" x2="589.9" y2="218"/><text class="axis" x="589.9" y="238" text-anchor="middle">-25%</text><line class="zero" x1="687.2" y1="62" x2="687.2" y2="218"/><text class="axis" x="687.2" y="238" text-anchor="middle">0%</text><line class="grid" x1="784.6" y1="62" x2="784.6" y2="218"/><text class="axis" x="784.6" y="238" text-anchor="middle">25%</text><text class="label" x="278" y="94" text-anchor="end">All misses</text><rect x="321.2" y="80" width="366.1" height="19" rx="3" fill="#2ea043"/><text class="value" x="330.2" y="95" text-anchor="start" style="fill:#ffffff">-94.0%</text><text class="label" x="278" y="130" text-anchor="end">Hot set (90% of reads on 10% of keys)</text><rect x="511.2" y="116" width="176.0" height="19" rx="3" fill="#2ea043"/><text class="value" x="520.2" y="131" text-anchor="start" style="fill:#ffffff">-45.2%</text><text class="label" x="278" y="166" text-anchor="end">50% misses</text><rect x="531.1" y="152" width="156.2" height="19" rx="3" fill="#2ea043"/><text class="value" x="540.1" y="167" text-anchor="start" style="fill:#ffffff">-40.1%</text><text class="label" x="278" y="202" text-anchor="end">All hits, uniform</text><rect x="687.2" y="188" width="103.6" height="19" rx="3" fill="#d29922"/><text class="value" x="781.8" y="203" text-anchor="end" style="fill:#ffffff">+26.6%</text><text class="axis" x="556" y="264" text-anchor="middle">change in mean read latency (negative = faster)</text></svg>

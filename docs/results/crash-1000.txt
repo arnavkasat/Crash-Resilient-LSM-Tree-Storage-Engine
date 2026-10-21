@@ -1,0 +1,31 @@
+   Compiling lsmkv v0.1.0 (/home/user/Crash-Resilient-LSM-Tree-Storage-Engine)
+    Finished `release` profile [optimized + debuginfo] target(s) in 4.28s
+     Running tests/crash.rs (target/release/deps/crash-56588062e9e89b0f)
+
+running 1 test
+cycle 0/1000: 540 acknowledged writes verified so far
+cycle 50/1000: 43080 acknowledged writes verified so far
+cycle 100/1000: 86135 acknowledged writes verified so far
+cycle 150/1000: 132522 acknowledged writes verified so far
+cycle 200/1000: 187006 acknowledged writes verified so far
+cycle 250/1000: 236970 acknowledged writes verified so far
+cycle 300/1000: 281644 acknowledged writes verified so far
+cycle 350/1000: 327807 acknowledged writes verified so far
+test thousand_crash_cycles has been running for over 60 seconds
+cycle 400/1000: 370837 acknowledged writes verified so far
+cycle 450/1000: 420355 acknowledged writes verified so far
+cycle 500/1000: 467994 acknowledged writes verified so far
+cycle 550/1000: 515381 acknowledged writes verified so far
+cycle 600/1000: 564220 acknowledged writes verified so far
+cycle 650/1000: 610783 acknowledged writes verified so far
+cycle 700/1000: 654945 acknowledged writes verified so far
+cycle 750/1000: 701996 acknowledged writes verified so far
+cycle 800/1000: 747722 acknowledged writes verified so far
+cycle 850/1000: 798313 acknowledged writes verified so far
+cycle 900/1000: 852282 acknowledged writes verified so far
+cycle 950/1000: 902383 acknowledged writes verified so far
+1000 crash cycles in 172.1s, 954462 acknowledged writes verified, 0 lost
+test thousand_crash_cycles ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 3 filtered out; finished in 172.06s
+

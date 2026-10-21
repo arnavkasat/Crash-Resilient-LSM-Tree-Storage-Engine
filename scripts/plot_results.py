@@ -107,7 +107,7 @@ def log_bars(path, title, subtitle, rows):
         t = (math.log10(v) - math.log10(lo)) / (math.log10(hi) - math.log10(lo))
         return x0 + t * (x1 - x0)
 
-    height = head + row_h * len(rows) + 34
+    height = head + row_h * len(rows) + 56
     parts = [
         f'<text class="title" x="{pad}" y="32">{esc(title)}</text>',
         f'<text class="sub" x="{pad}" y="54">{esc(subtitle)}</text>',
@@ -129,7 +129,7 @@ def log_bars(path, title, subtitle, rows):
         shown = f"{value / 1000:.1f}K" if value >= 1000 else f"{value:.0f}"
         parts.append(f'<text class="value" x="{x0 + bar_w + 9:.1f}" y="{y + 19}">{shown}</text>')
     parts.append(
-        f'<text class="axis" x="{(x0 + x1) / 2:.0f}" y="{height - 6}" text-anchor="middle">operations per second (log scale)</text>'
+        f'<text class="axis" x="{(x0 + x1) / 2:.0f}" y="{height - 10}" text-anchor="middle">operations per second (log scale)</text>'
     )
     path.write_text(svg(width, height, "".join(parts)))
 
@@ -139,34 +139,53 @@ def diverging_bars(path, title, subtitle, rows):
     pad, label_w, row_h = 22, 268, 36
     width, head = 900, 74
     x0 = pad + label_w
-    x1 = width - pad - 20
-    lo, hi = -100.0, 20.0
+    x1 = width - pad - 56
+    # Fit the axis to the data rather than assuming a range, so a bar can
+    # neither overrun the plot nor collide with the row labels.
+    values = [pct for _, pct in rows]
+    lo = min(min(values), 0) - 8
+    hi = max(max(values), 0) + 8
     zero = x0 + (0 - lo) / (hi - lo) * (x1 - x0)
 
     def x_of(v):
         return x0 + (v - lo) / (hi - lo) * (x1 - x0)
 
-    height = head + row_h * len(rows) + 34
+    height = head + row_h * len(rows) + 56
     parts = [
         f'<text class="title" x="{pad}" y="32">{esc(title)}</text>',
         f'<text class="sub" x="{pad}" y="54">{esc(subtitle)}</text>',
     ]
-    for tick in (-100, -75, -50, -25, 0, 20):
+    ticks = [t for t in range(-125, 126, 25) if lo <= t <= hi]
+    for tick in ticks:
         tx = x_of(tick)
         cls = "zero" if tick == 0 else "grid"
-        parts.append(f'<line class="{cls}" x1="{tx:.1f}" y1="{head - 12}" x2="{tx:.1f}" y2="{head + row_h * len(rows)}"/>')
-        parts.append(f'<text class="axis" x="{tx:.1f}" y="{head + row_h * len(rows) + 20}" text-anchor="middle">{tick}%</text>')
+        parts.append(
+            f'<line class="{cls}" x1="{tx:.1f}" y1="{head - 12}" x2="{tx:.1f}" y2="{head + row_h * len(rows)}"/>'
+        )
+        parts.append(
+            f'<text class="axis" x="{tx:.1f}" y="{head + row_h * len(rows) + 20}" text-anchor="middle">{tick}%</text>'
+        )
     for i, (label, pct) in enumerate(rows):
         y = head + i * row_h
         tx = x_of(pct)
-        left, bar_w = (min(tx, zero), abs(tx - zero))
+        left, bar_w = min(tx, zero), abs(tx - zero)
         colour = GREEN if pct < 0 else AMBER
         parts.append(f'<text class="label" x="{x0 - 12}" y="{y + 20}" text-anchor="end">{esc(label)}</text>')
         parts.append(f'<rect x="{left:.1f}" y="{y + 6}" width="{max(bar_w, 2):.1f}" height="19" rx="3" fill="{colour}"/>')
-        anchor, vx = ("end", left - 8) if pct < 0 else ("start", left + bar_w + 8)
-        parts.append(f'<text class="value" x="{vx:.1f}" y="{y + 21}" text-anchor="{anchor}">{pct:+.1f}%</text>')
+        # A long bar reaches the label column, so its value goes inside it.
+        if bar_w > 64:
+            vx = left + 9 if pct < 0 else left + bar_w - 9
+            anchor = "start" if pct < 0 else "end"
+            fill = ' style="fill:#ffffff"'
+        else:
+            vx = left - 8 if pct < 0 else left + bar_w + 8
+            anchor = "end" if pct < 0 else "start"
+            fill = ""
+        parts.append(
+            f'<text class="value" x="{vx:.1f}" y="{y + 21}" text-anchor="{anchor}"{fill}>{pct:+.1f}%</text>'
+        )
     parts.append(
-        f'<text class="axis" x="{(x0 + x1) / 2:.0f}" y="{height - 6}" text-anchor="middle">change in mean read latency (negative = faster)</text>'
+        f'<text class="axis" x="{(x0 + x1) / 2:.0f}" y="{height - 10}" text-anchor="middle">change in mean read latency (negative = faster)</text>'
     )
     path.write_text(svg(width, height, "".join(parts)))
 
@@ -180,7 +199,7 @@ def stat_card(path, title, subtitle, stats):
     box = (width - 44) / len(stats)
     for i, (value, caption, colour) in enumerate(stats):
         cx = 22 + box * i + box / 2
-        parts.append(f'<text class="big" x="{cx:.0f}" y="122" text-anchor="middle" fill="{colour}">{esc(value)}</text>')
+        parts.append(f'<text class="big" x="{cx:.0f}" y="122" text-anchor="middle" style="fill:{colour}">{esc(value)}</text>')
         parts.append(f'<text class="sub" x="{cx:.0f}" y="148" text-anchor="middle">{esc(caption)}</text>')
     path.write_text(svg(width, height, "".join(parts)))
 

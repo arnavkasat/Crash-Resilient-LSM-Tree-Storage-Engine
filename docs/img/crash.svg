@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="186" viewBox="0 0 900 186" role="img">
+  <style>
+    .bg    { fill: #f6f8fa; stroke: #d0d7de; }
+    .title { fill: #1f2328; font: 600 17px -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif; }
+    .sub   { fill: #656d76; font: 400 12.5px -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif; }
+    .label { fill: #1f2328; font: 400 13px -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif; }
+    .value { fill: #1f2328; font: 600 13px ui-monospace, SFMono-Regular, Menlo, monospace; }
+    .axis  { fill: #656d76; font: 400 11px ui-monospace, SFMono-Regular, Menlo, monospace; }
+    .grid  { stroke: #d8dee4; stroke-width: 1; }
+    .zero  { stroke: #8c959f; stroke-width: 1.5; }
+    .big   { fill: #1f2328; font: 700 38px -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif; }
+    @media (prefers-color-scheme: dark) {
+      .bg    { fill: #0d1117; stroke: #30363d; }
+      .title, .label, .value, .big { fill: #e6edf3; }
+      .sub, .axis { fill: #8b949e; }
+      .grid  { stroke: #21262d; }
+      .zero  { stroke: #6e7681; }
+    }
+  </style>
+<rect class="bg" x="0.5" y="0.5" width="899" height="185" rx="8"/><text class="title" x="22" y="32">Crash test: SIGKILL at randomised moments, then reopen and verify</text><text class="sub" x="22" y="54">1,000 kill/recover cycles in 172s - every acknowledged write checked for presence and value</text><text class="big" x="165" y="122" text-anchor="middle" style="fill:#2f81f7">1,000</text><text class="sub" x="165" y="148" text-anchor="middle">crash cycles</text><text class="big" x="450" y="122" text-anchor="middle" style="fill:#2f81f7">954,462</text><text class="sub" x="450" y="148" text-anchor="middle">acknowledged writes verified</text><text class="big" x="735" y="122" text-anchor="middle" style="fill:#2ea043">0</text><text class="sub" x="735" y="148" text-anchor="middle">lost</text></svg>

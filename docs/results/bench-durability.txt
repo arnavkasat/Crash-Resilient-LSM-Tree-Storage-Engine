@@ -1,0 +1,45 @@
+### lsmbench --keys 60000 --sync every   (one fsync per write)
+lsmkv benchmark: 60000 keys x 100 B  (~0.01 GB of user data)
+directory /tmp/lsmkv-bench  sync=fsync-every-write  batch=1  order=sequential
+
+[load] sequential writes
+  write throughput :       5.8K ops/sec
+
+[compact] draining level 0
+  compaction took  : 0.01s
+
+[read] random point lookups
+  uniform, all hit :     377.1K ops/sec (20000 found)
+  uniform, all miss:    4360.5K ops/sec
+  uniform, 50% miss:     957.7K ops/sec
+  hot set, 20% miss:     686.4K ops/sec
+
+writes=60000 reads=80000
+flushes=3 compactions=0 (of which 0 trivial moves) bytes_compacted=0 stalls=0
+block cache: 44640 hits / 46181 lookups (96.7%)
+memtable: 0 bytes
+  L2: 3 files, 6489156 bytes
+
+
+### lsmbench --keys 400000 --sync every --batch 100   (group commit)
+lsmkv benchmark: 400000 keys x 100 B  (~0.04 GB of user data)
+directory /tmp/lsmkv-bench  sync=fsync-every-write  batch=100  order=sequential
+
+[load] sequential writes
+  write throughput :     248.3K ops/sec
+
+[compact] draining level 0
+  compaction took  : 0.01s
+
+[read] random point lookups
+  uniform, all hit :     172.3K ops/sec (20000 found)
+  uniform, all miss:    3347.7K ops/sec
+  uniform, 50% miss:     480.6K ops/sec
+  hot set, 20% miss:     570.6K ops/sec
+
+writes=400000 reads=80000
+flushes=18 compactions=0 (of which 0 trivial moves) bytes_compacted=0 stalls=0
+block cache: 36328 hits / 46160 lookups (78.7%)
+memtable: 0 bytes
+  L2: 18 files, 43260207 bytes
+

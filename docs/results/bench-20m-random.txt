@@ -1,0 +1,24 @@
+### lsmbench --keys 20000000 --read-ops 300000 --random
+lsmkv benchmark: 20000000 keys x 100 B  (~2.18 GB of user data)
+directory /tmp/lsmkv-bench  sync=os  batch=1  order=random
+
+[load] random-order writes
+  write throughput :     133.7K ops/sec
+
+[compact] draining level 0
+  compaction took  : 0.18s
+
+[read] random point lookups
+  uniform, all hit :      65.7K ops/sec (189508 found)
+  uniform, all miss:     496.1K ops/sec
+  uniform, 50% miss:     159.6K ops/sec
+  hot set, 20% miss:     162.8K ops/sec
+
+writes=20000000 reads=1200000
+flushes=862 compactions=826 (of which 286 trivial moves) bytes_compacted=16390251072 stalls=5170
+block cache: 86208 hits / 4238734 lookups (2.0%)
+memtable: 2504882 bytes
+  L1: 7 files, 29956258 bytes
+  L2: 78 files, 328882109 bytes
+  L3: 279 files, 1179031869 bytes
+

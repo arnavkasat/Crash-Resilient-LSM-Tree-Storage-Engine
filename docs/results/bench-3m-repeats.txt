@@ -1,0 +1,53 @@
+### repeat run 2: lsmbench --keys 3000000 --read-ops 300000
+[read] random point lookups
+  uniform, all hit :     108.1K ops/sec (300000 found)
+  uniform, all miss:    1931.1K ops/sec
+  uniform, 50% miss:     217.7K ops/sec
+  hot set, 20% miss:     306.2K ops/sec
+
+writes=3000000 reads=1200000
+flushes=130 compactions=63 (of which 63 trivial moves) bytes_compacted=0 stalls=0
+block cache: 308787 hits / 694609 lookups (44.5%)
+memtable: 0 bytes
+  L0: 1 files, 1155400 bytes
+  L2: 66 files, 165409353 bytes
+  L3: 63 files, 157890738 bytes
+
+[compare] Bloom filter + block cache off
+  uniform, all hit :     130.3K ops/sec
+  uniform, all miss:     134.2K ops/sec
+  uniform, 50% miss:     133.2K ops/sec
+  hot set, 20% miss:     158.3K ops/sec
+
+[summary] change in mean read latency, filters+cache on vs off
+  uniform, all hit : +20.5%
+  uniform, all miss: -93.1%
+  uniform, 50% miss: -38.8%
+  hot set, 20% miss: -48.3%
+
+### repeat run 3: lsmbench --keys 3000000 --read-ops 300000
+[read] random point lookups
+  uniform, all hit :     109.6K ops/sec (300000 found)
+  uniform, all miss:    1942.2K ops/sec
+  uniform, 50% miss:     194.6K ops/sec
+  hot set, 20% miss:     281.9K ops/sec
+
+writes=3000000 reads=1200000
+flushes=130 compactions=63 (of which 63 trivial moves) bytes_compacted=0 stalls=63
+block cache: 308787 hits / 694609 lookups (44.5%)
+memtable: 0 bytes
+  L2: 67 files, 166564753 bytes
+  L3: 63 files, 157890738 bytes
+
+[compare] Bloom filter + block cache off
+  uniform, all hit :     126.0K ops/sec
+  uniform, all miss:     129.6K ops/sec
+  uniform, 50% miss:     131.8K ops/sec
+  hot set, 20% miss:     144.5K ops/sec
+
+[summary] change in mean read latency, filters+cache on vs off
+  uniform, all hit : +15.0%
+  uniform, all miss: -93.3%
+  uniform, 50% miss: -32.3%
+  hot set, 20% miss: -48.7%
+
